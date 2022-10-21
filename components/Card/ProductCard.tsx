@@ -1,7 +1,10 @@
 import { Box, Flex, IconButton, useColorModeValue, useToast } from "@chakra-ui/react";
 import { DeleteIcon, EditIcon } from "@chakra-ui/icons";
 import { FiShoppingCart } from "react-icons/fi";
+import { selectAuth } from "../../store/slice/authSlice";
+import { useSelector } from "react-redux";
 import { useDeleteProductMutation, useCreateCartMutation } from "../../store/query/apiSplice";
+import { useGetUserQuery } from "../../store/query/apiSplice";
 import Link from "next/link";
 
 interface Props {
@@ -14,12 +17,17 @@ interface Props {
 
 const ProductCard: React.FC<Props> = ({ product_name, price, id, shop_id }) => {
   const toast = useToast();
-
+  const { name } = useSelector(selectAuth);
+  const { data: user } = useGetUserQuery();
   const [deleteProduct] = useDeleteProductMutation();
   const [createCart, { isSuccess, isError }] = useCreateCartMutation();
 
+  let userID = user?.response.filter((u: any) => {
+    return u.username === name;
+  });
+
   const handleClick = () => {
-    createCart({ user_id: 1, product_id: id, shop_id: shop_id, is_active: true });
+    createCart({ user_id: userID[0].id, product_id: id, shop_id: shop_id, is_active: true });
     if (isSuccess) {
       toast({
         title: `Added to cart`,
